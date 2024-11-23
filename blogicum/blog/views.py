@@ -1,16 +1,17 @@
 from django.shortcuts import render, get_object_or_404
-from .models import Category, Post, Location
+from .models import Category, Post
 import datetime
+
+
 # Create your views here.
 def index(request):
     template = 'blog/index.html'
     current_date = datetime.datetime.now()
     r_posts = Post.objects.filter(
-            is_published=True,
-            category__is_published=True,
-            pub_date__lte=current_date
-        ).order_by('-pub_date')[:5];
-    
+        is_published=True,
+        category__is_published=True,
+        pub_date__lte=current_date).order_by('-pub_date')[:5]
+
     context = {
         'post_list': r_posts
     }
@@ -43,16 +44,15 @@ def category_posts(request, category_slug):
         is_published=True
     )
     current_date = datetime.datetime.now()
-    posts =  r_posts = Post.objects.filter(
-            is_published=True,
-            category__slug=category_slug,
-            category__is_published=True,
-            pub_date__lte=current_date
-        ).order_by('-pub_date');
-    
+    posts = Post.objects.filter(
+        is_published=True,
+        category__slug=category_slug,
+        category__is_published=True,
+        pub_date__lte=current_date).order_by('-pub_date')
+
     context = {
         'category': category,
-        'post_list': posts 
+        'post_list': posts
     }
 
     return render(request, template, context)
