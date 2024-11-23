@@ -1,82 +1,58 @@
-from django.shortcuts import render
-
-
-posts = [
-    {
-        'id': 0,
-        'location': 'Остров отчаянья',
-        'date': '30 сентября 1659 года',
-        'category': 'travel',
-        'text': '''Наш корабль, застигнутый в открытом море
-                страшным штормом, потерпел крушение.
-                Весь экипаж, кроме меня, утонул; я же,
-                несчастный Робинзон Крузо, был выброшен
-                полумёртвым на берег этого проклятого острова,
-                который назвал островом Отчаяния.''',
-    },
-    {
-        'id': 1,
-        'location': 'Остров отчаянья',
-        'date': '1 октября 1659 года',
-        'category': 'not-my-day',
-        'text': '''Проснувшись поутру, я увидел, что наш корабль сняло
-                с мели приливом и пригнало гораздо ближе к берегу.
-                Это подало мне надежду, что, когда ветер стихнет,
-                мне удастся добраться до корабля и запастись едой и
-                другими необходимыми вещами. Я немного приободрился,
-                хотя печаль о погибших товарищах не покидала меня.
-                Мне всё думалось, что, останься мы на корабле, мы
-                непременно спаслись бы. Теперь из его обломков мы могли бы
-                построить баркас, на котором и выбрались бы из этого
-                гиблого места.''',
-    },
-    {
-        'id': 2,
-        'location': 'Остров отчаянья',
-        'date': '25 октября 1659 года',
-        'category': 'not-my-day',
-        'text': '''Всю ночь и весь день шёл дождь и дул сильный
-                порывистый ветер. 25 октября.  Корабль за ночь разбило
-                в щепки; на том месте, где он стоял, торчат какие-то
-                жалкие обломки,  да и те видны только во время отлива.
-                Весь этот день я хлопотал  около вещей: укрывал и
-                укутывал их, чтобы не испортились от дождя.''',
-    }
-]
-
-
+from django.shortcuts import render, get_object_or_404
+from .models import Category, Post, Location
+import datetime
 # Create your views here.
 def index(request):
     template = 'blog/index.html'
-    r_posts = posts.copy()
-    r_posts.reverse()
+    current_date = datetime.datetime.now()
+    r_posts = Post.objects.filter(
+            is_published=True,
+            category__is_published=True,
+            pub_date__lte=current_date
+        ).order_by('-pub_date')[:5];
+    
     context = {
-        'posts': r_posts
+        'post_list': r_posts
     }
+
     return render(request, template, context)
 
 
 def post_detail(request, id):
     template = 'blog/detail.html'
+    current_date = datetime.datetime.now()
+    post = get_object_or_404(
+        Post.objects.filter(
+            is_published=True,
+            category__is_published=True,
+            pub_date__lte=current_date
+        ),
+        pk=id
+    )
     context = {
-        'post': posts[id]
+        'post': post
     }
     return render(request, template, context)
 
 
 def category_posts(request, category_slug):
     template = 'blog/category.html'
-
-    # context = {
-    #     'posts': []
-    # }
-
-    # for post in posts:
-    #     if post['category'] == slug:
-    #         context['posts'].append(post)
-
+    category = get_object_or_404(
+        Category,
+        slug=category_slug,
+        is_published=True
+    )
+    current_date = datetime.datetime.now()
+    posts =  r_posts = Post.objects.filter(
+            is_published=True,
+            category__slug=category_slug,
+            category__is_published=True,
+            pub_date__lte=current_date
+        ).order_by('-pub_date');
+    
     context = {
-        'category_name': category_slug
+        'category': category,
+        'post_list': posts 
     }
 
     return render(request, template, context)
