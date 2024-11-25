@@ -6,12 +6,8 @@ import datetime
 # Create your views here.
 def index(request):
     template = 'blog/index.html'
-    current_date = datetime.datetime.now()
-    r_posts = Post.objects.filter(
-        is_published=True,
-        category__is_published=True,
-        pub_date__lte=current_date).order_by('-pub_date')[:5]
-
+    
+    r_posts = __get_published_posts()
     context = {
         'post_list': r_posts
     }
@@ -56,3 +52,11 @@ def category_posts(request, category_slug):
     }
 
     return render(request, template, context)
+
+
+def __get_published_posts():
+    current_date = datetime.datetime.now()
+    return Post.objects.filter(
+        is_published=True,
+        category__is_published=True,
+        pub_date__lte=current_date).order_by('-pub_date')[:5]
